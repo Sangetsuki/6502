@@ -17,8 +17,14 @@ void memory_reset(struct Memory *mem) {
   }
 }
 
-u8 memory_read(u32 *cycles, u8 addr, struct Memory *mem) {
+u8 memory_read(u32 *cycles, u16 addr, struct Memory *mem) {
   (*cycles)--;
+  return mem->data[addr];
+}
+
+u8 memory_write(u32 *cycles, u16 addr, u8 value, struct Memory *mem) {
+  (*cycles)--;
+  mem->data[addr] = value;
   return mem->data[addr];
 }
 
@@ -49,7 +55,7 @@ void cpu_reset(struct CPU *cpu) {
 }
 
 u8 cpu_get_mem(u32 *cycles, struct CPU *cpu) {
-  *cycles = *cycles - 1;
+  (*cycles)--;
   return cpu->mem->data[cpu->pc++];
 }
 
@@ -74,6 +80,8 @@ enum opcodes {
   INS_SEI = 0x78,
   INS_ADC_ABY = 0x79,
   INS_ADC_ABX = 0x7D,
+  INS_STA_ZPG = 0x85,
+  INS_STA_ZPX = 0x95,
   INS_LDY_IMM = 0xA0,
   INS_LDA_IDX = 0xA1,
   INS_LDX_IMM = 0xA2,
@@ -134,6 +142,15 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
       break;
     case INS_SEI:
       cpu->irq_disable = 1;
+      break;
+    case INS_STA_ZPG:
+      data[0] = cpu_get_mem(&cycles, cpu);
+      memory_write(&cycles, data[0], cpu->ac, cpu->mem);
+      break;
+    case INS_STA_ZPX:
+      data[0] = cpu_get_mem(&cycles, cpu);
+      memory_write(&cycles, data[0] + cpu->x, cpu->ac, cpu->mem);
+      cycles--;
       break;
     case INS_LDY_IMM:
       data[0] = cpu_get_mem(&cycles, cpu);
@@ -213,13 +230,13 @@ int main(void) {
   struct CPU cpu;
   cpu.mem = &mem;
   cpu_reset(&cpu);
-  cpu.mem->data[0x0069] = 10;
-  cpu.mem->data[0xFFFC] = 0xA5;
+  cpu.ac = 0x69;
+  cpu.mem->data[0xFFFC] = INS_STA_ZPG;
   cpu.mem->data[0xFFFD] = 0x69;
   printf("pc antes: %x\n", cpu.pc);
   cpu_execute(3, &cpu);
   printf("pc depois: %x\n", cpu.pc);
-  printf("A = %x\n", cpu.ac);
+  printf("0x0069 = %x\n", cpu.mem->data[0x0069]);
 
   return 0;
 }

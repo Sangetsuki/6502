@@ -53,27 +53,89 @@ u8 cpu_get_mem(u32 *cycles, struct CPU *cpu) {
   return cpu->mem->data[cpu->pc++];
 }
 
+enum opcodes {
+  INS_CLC = 0x18,
+  INS_AND_IDX = 0x21,
+  INS_AND_ZPG = 0x25,
+  INS_AND_IMM = 0x29,
+  INS_AND_ABS = 0x2D,
+  INS_AND_IDY = 0x31,
+  INS_AND_ZPX = 0x35,
+  INS_SEC = 0x38,
+  INS_AND_ABY = 0x39,
+  INS_AND_ABX = 0x3D,
+  INS_CLI = 0x58,
+  INS_ADC_IDX = 0x61,
+  INS_ADC_ZPG = 0x65,
+  INS_ADC_IMM = 0x69,
+  INS_ADC_ABS = 0x6D,
+  INS_ADC_IDY = 0x61,
+  INS_ADC_ZPX = 0x75,
+  INS_SEI = 0x78,
+  INS_ADC_ABY = 0x79,
+  INS_ADC_ABX = 0x7D,
+  INS_LDY_IMM = 0xA0,
+  INS_LDA_IDX = 0xA1,
+  INS_LDX_IMM = 0xA2,
+  INS_LDY_ZPG = 0xA4,
+  INS_LDA_ZPG = 0xA5,
+  INS_LDX_ZPG = 0xA6,
+  INS_LDA_IMM = 0xA9,
+  INS_LDY_ABS = 0xAC,
+  INS_LDA_ABS = 0xAD,
+  INS_LDX_ABS = 0xAE,
+  INS_LDA_IDY = 0xB1,
+  INS_LDY_ZPX = 0xB4,
+  INS_LDA_ZPX = 0xB5,
+  INS_LDX_ZPY = 0xB6,
+  INS_LDA_ABY = 0xB9,
+  INS_LDY_ABX = 0xBC,
+  INS_LDA_ABX = 0xBD,
+  INS_LDX_ABY = 0xBE,
+  INS_CLV = 0xB8,
+  INS_CLD = 0xD8,
+  INS_NOP = 0xEA,
+  INS_SED = 0xF8,
+};
+
 void cpu_execute(u32 cycles, struct CPU *cpu) {
   u8 data[10];
   while (cycles > 0) {
     u8 opcode = cpu_get_mem(&cycles, cpu);
     switch (opcode) {
-    case 0x18:
+    case INS_CLC:
       cpu->carry = 0;
       cycles--;
       break;
-    case 0x38:
+    case INS_AND_ZPG:
+      data[0] = cpu_get_mem(&cycles, cpu);
+      data[1] = memory_read(&cycles, data[0], cpu->mem);
+      cpu->ac &= data[1];
+      if (cpu->ac == 0)
+        cpu->zero = 1;
+      if (cpu->ac & 0x80)
+        cpu->negative = 1;
+      break;
+    case INS_AND_IMM:
+      data[0] = cpu_get_mem(&cycles, cpu);
+      cpu->ac &= data[0];
+      if (cpu->ac == 0)
+        cpu->zero = 1;
+      if (cpu->ac & 0x80)
+        cpu->negative = 1;
+      break;
+    case INS_SEC:
       cpu->carry = 1;
       cycles--;
       break;
-    case 0x58:
+    case INS_CLI:
       cpu->irq_disable = 0;
       cycles--;
       break;
-    case 0x78:
+    case INS_SEI:
       cpu->irq_disable = 1;
       break;
-    case 0xA0:
+    case INS_LDY_IMM:
       data[0] = cpu_get_mem(&cycles, cpu);
       cpu->y = data[0];
       if (cpu->y == 0)
@@ -81,7 +143,7 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
       if (cpu->y & 0x80)
         cpu->negative = 1;
       break;
-    case 0xA2:
+    case INS_LDX_IMM:
       data[0] = cpu_get_mem(&cycles, cpu);
       cpu->x = data[0];
       if (cpu->x == 0)
@@ -89,7 +151,7 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
       if (cpu->x & 0x80)
         cpu->negative = 1;
       break;
-    case 0xA4:
+    case INS_LDY_ZPG:
       data[0] = cpu_get_mem(&cycles, cpu);
       data[1] = memory_read(&cycles, data[0], cpu->mem);
       cpu->y = data[1];
@@ -98,7 +160,7 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
       if (cpu->y & 0x80)
         cpu->negative = 1;
       break;
-    case 0xA5:
+    case INS_LDA_ZPG:
       data[0] = cpu_get_mem(&cycles, cpu);
       data[1] = memory_read(&cycles, data[0], cpu->mem);
       cpu->ac = data[1];
@@ -107,7 +169,7 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
       if (cpu->ac & 0x80)
         cpu->negative = 1;
       break;
-    case 0xA6:
+    case INS_LDX_ZPG:
       data[0] = cpu_get_mem(&cycles, cpu);
       data[1] = memory_read(&cycles, data[0], cpu->mem);
       cpu->x = data[1];
@@ -116,7 +178,7 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
       if (cpu->x & 0x80)
         cpu->negative = 1;
       break;
-    case 0xA9:
+    case INS_LDA_IMM:
       data[0] = cpu_get_mem(&cycles, cpu);
       cpu->ac = data[0];
       if (cpu->ac == 0)
@@ -124,17 +186,17 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
       if (cpu->ac & 0x80)
         cpu->negative = 1;
       break;
-    case 0xB8:
+    case INS_CLV:
       cpu->overflow = 0;
       cycles--;
       break;
-    case 0xD8:
+    case INS_CLD:
       cpu->decimal = 0;
       break;
-    case 0xEA:
+    case INS_NOP:
       cycles--;
       break;
-    case 0xF8:
+    case INS_SED:
       cpu->decimal = 1;
       cycles--;
       break;
@@ -152,10 +214,12 @@ int main(void) {
   cpu.mem = &mem;
   cpu_reset(&cpu);
   cpu.mem->data[0x0069] = 10;
-  cpu.mem->data[0xFFFC] = 0xEA;
-  cpu.mem->data[0xFFFD] = 0xEA;
+  cpu.mem->data[0xFFFC] = 0xA5;
+  cpu.mem->data[0xFFFD] = 0x69;
   printf("pc antes: %x\n", cpu.pc);
-  cpu_execute(2, &cpu);
-  printf("pc depois: %x", cpu.pc);
+  cpu_execute(3, &cpu);
+  printf("pc depois: %x\n", cpu.pc);
+  printf("A = %x\n", cpu.ac);
+
   return 0;
 }

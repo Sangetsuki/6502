@@ -18,11 +18,27 @@ void memory_reset(struct Memory *mem) {
 }
 
 u8 memory_read(u32 *cycles, u16 addr, struct Memory *mem) {
+  // memory mirror
+  if ((0x0800 <= addr && addr <= 0x0FFF) ||
+      (0x1000 <= addr && addr <= 0x17FF) ||
+      (0x1800 <= addr && addr <= 0x1FFF)) {
+    addr %= 0x0800;
+  } else if (0x2008 <= addr && addr <= 0x3FFF) {
+    addr = 0x2000 + addr % 8;
+  }
   (*cycles)--;
   return mem->data[addr];
 }
 
 u8 memory_write(u32 *cycles, u16 addr, u8 value, struct Memory *mem) {
+  // memory mirror
+  if ((0x0800 <= addr && addr <= 0x0FFF) ||
+      (0x1000 <= addr && addr <= 0x17FF) ||
+      (0x1800 <= addr && addr <= 0x1FFF)) {
+    addr %= 0x0800;
+  } else if (0x2008 <= addr && addr <= 0x3FFF) {
+    addr = 0x2000 + addr % 8;
+  }
   (*cycles)--;
   mem->data[addr] = value;
   return mem->data[addr];
@@ -230,7 +246,7 @@ int main(void) {
   struct CPU cpu;
   cpu.mem = &mem;
   cpu_reset(&cpu);
-  cpu.ac = 0x69;
+  cpu.ac = 0x40;
   cpu.mem->data[0xFFFC] = INS_STA_ZPG;
   cpu.mem->data[0xFFFD] = 0x69;
   printf("pc antes: %x\n", cpu.pc);

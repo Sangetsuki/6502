@@ -68,9 +68,28 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
       data[0] = cpu_get_mem(&cycles, cpu);
       memory_write(&cycles, data[0], cpu->ac, cpu->mem);
       break;
+    case INS_STA_ABS:
+      data[0] = cpu_get_mem(&cycles, cpu);
+      data[1] = cpu_get_mem(&cycles, cpu);
+      memory_write(&cycles, (data[1] << 8) | data[0], cpu->ac, cpu->mem);
+      break;
     case INS_STA_ZPX:
       data[0] = cpu_get_mem(&cycles, cpu);
       memory_write(&cycles, data[0] + cpu->x, cpu->ac, cpu->mem);
+      cycles--;
+      break;
+    case INS_STA_ABY:
+      data[0] = cpu_get_mem(&cycles, cpu);
+      data[1] = cpu_get_mem(&cycles, cpu);
+      memory_write(&cycles, ((data[1] << 8) | data[0]) + cpu->y, cpu->ac,
+                   cpu->mem);
+      cycles--;
+      break;
+    case INS_STA_ABX:
+      data[0] = cpu_get_mem(&cycles, cpu);
+      data[1] = cpu_get_mem(&cycles, cpu);
+      memory_write(&cycles, ((data[1] << 8) | data[0]) + cpu->x, cpu->ac,
+                   cpu->mem);
       cycles--;
       break;
     case INS_LDY_IMM:

@@ -3,7 +3,7 @@ ifdef DEBUG
 	C_FLAGS += -g
 endif
 
-build/6502: build/main.o build/memory.o build/cpu.o
+build/6502: build/main.o build/memory.o build/cpu.o build/rom.o
 	gcc $^ -o $@
 
 build/memory.o: src/memory.c include/memory.h
@@ -15,3 +15,5 @@ build/main.o: src/main.c
 build/cpu.o: src/cpu.c include/cpu.h
 	gcc $< $(C_FLAGS) -o $@
 
+build/rom.o: src/rom.c include/rom.h	
+	gcc $< $(C_FLAGS) -o $@

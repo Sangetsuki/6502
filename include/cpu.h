@@ -26,6 +26,7 @@ struct CPU {
 };
 
 enum opcodes {
+  INS_BPL = 0x10,
   INS_CLC = 0x18,
   INS_AND_IDX = 0x21,
   INS_AND_ZPG = 0x25,
@@ -52,6 +53,7 @@ enum opcodes {
   INS_STA_ABS = 0x8D,
   INS_STA_ZPX = 0x95,
   INS_STA_ABY = 0x99,
+  INS_TXS = 0x9A,
   INS_STA_ABX = 0x9D,
   INS_LDY_IMM = 0xA0,
   INS_LDA_IDX = 0xA1,
@@ -83,5 +85,6 @@ enum opcodes {
 void cpu_reset(struct CPU *cpu);
 u8 cpu_get_mem(u32 *cycles, struct CPU *cpu);
 void cpu_execute(u32 cycles, struct CPU *cpu);
+void cpu_load_rom(const char *path, struct CPU *cpu);
 
 #endif // INCLUDE_INCLUDE_CPU_H_

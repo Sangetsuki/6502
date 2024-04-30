@@ -1,23 +1,35 @@
 #include "cpu.h"
 #include "memory.h"
+#include "rom.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-int main(void) {
+int main(int argc, char *argv[]) {
   struct Memory mem;
   struct CPU cpu;
   cpu.mem = &mem;
   cpu_reset(&cpu);
-  cpu.mem->data[0xFFFC] = INS_JMP_ABS;
-  cpu.mem->data[0xFFFD] = 0x00;
-  cpu.mem->data[0xFFFE] = 0x80;
-  cpu.mem->data[0x8000] = INS_LDA_IMM;
-  cpu.mem->data[0x8001] = 0x40;
-  cpu.mem->data[0x8002] = INS_STA_ABS;
-  cpu.mem->data[0x8003] = 0x20;
-  cpu.mem->data[0x8004] = 0x01;
-  cpu.mem->data[0x8005] = INS_TAX;
-  cpu_execute(20, &cpu);
-  printf("x = %x\n", cpu.x);
+  struct RomHeader rom_header;
+  read_rom_header("./mario.nes", &rom_header);
+
+  u8 mapper = (rom_header.flags_6 & 0xF0) | ((rom_header.flags_7 & 0xF0) << 8);
+  printf("mapper: %x\n", mapper);
+  const char *title = (char *)&rom_header.nes;
+  puts(title);
+  printf("Essa ROM tem %d kb de programa e %d kb de graficos\n",
+         rom_header.prg_rom_size * 16, rom_header.chr_rom_size * 8);
+
+  u8 *rom_data = alloc_rom("./mario.nes");
+
+  // mapper 0
+  memcpy(&cpu.mem->data[0x8000], rom_data, 0x8000);
+
+  free(rom_data);
+
+  cpu.pc = (cpu.mem->data[0xFFFD] << 8) | cpu.mem->data[0xFFFC];
+  printf("VECTOR: $%x\n", cpu.pc);
+  cpu_execute(100000, &cpu);
 
   return 0;
 }

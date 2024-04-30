@@ -1,5 +1,6 @@
 #include "cpu.h"
 #include "memory.h"
+#include <stdio.h>
 
 void cpu_reset(struct CPU *cpu) {
   cpu->pc = 0xFFFC;
@@ -19,6 +20,13 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
   while (cycles > 0) {
     u8 opcode = cpu_get_mem(&cycles, cpu);
     switch (opcode) {
+    case INS_BPL:
+      data[0] = cpu_get_mem(&cycles, cpu);
+      if (!cpu->negative) {
+        cpu->pc += data[0];
+        break;
+      }
+      break;
     case INS_CLC:
       cpu->carry = 0;
       cycles--;
@@ -83,6 +91,14 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
       data[1] = cpu_get_mem(&cycles, cpu);
       memory_write(&cycles, ((data[1] << 8) | data[0]) + cpu->y, cpu->ac,
                    cpu->mem);
+      cycles--;
+      break;
+    case INS_TXS:
+      cpu->x = cpu->sp;
+      if (cpu->x == 0)
+        cpu->zero = 1;
+      if (cpu->x & 0x80)
+        cpu->negative = 1;
       cycles--;
       break;
     case INS_STA_ABX:
@@ -159,6 +175,15 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
         cpu->negative = 1;
       cycles--;
       break;
+    case INS_LDA_ABS:
+      data[0] = cpu_get_mem(&cycles, cpu);
+      data[1] = cpu_get_mem(&cycles, cpu);
+      cpu->ac = memory_read(&cycles, (data[1] << 8) | data[0], cpu->mem);
+      if (cpu->ac == 0)
+        cpu->zero = 1;
+      if (cpu->ac & 0x80)
+        cpu->negative = 1;
+      break;
     case INS_TSX:
       cpu->x = cpu->sp;
       if (cpu->x == 0)
@@ -182,6 +207,7 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
       cycles--;
       break;
     default:
+      printf("instrucao nao implementada em $%x: $%x\n", --cpu->pc, opcode);
       cycles = 0;
       break;
     }

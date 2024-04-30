@@ -1,2 +1,17 @@
-build/main: src/main.c
-	gcc src/main.c -g -o build/main -O3
+C_FLAGS = -c -O3 -I include -Wall
+ifdef DEBUG
+	C_FLAGS += -g
+endif
+
+build/6502: build/main.o build/memory.o build/cpu.o
+	gcc $^ -o $@
+
+build/memory.o: src/memory.c include/memory.h
+	gcc $< $(C_FLAGS) -o $@
+
+build/main.o: src/main.c
+	gcc $< $(C_FLAGS) -o $@
+
+build/cpu.o: src/cpu.c include/cpu.h
+	gcc $< $(C_FLAGS) -o $@
+

@@ -86,12 +86,14 @@ enum opcodes {
   INS_SEC = 0x38,
   INS_AND_ABY = 0x39,
   INS_AND_ABX = 0x3D,
+  INS_JMP_ABS = 0x4C,
   INS_CLI = 0x58,
   INS_ADC_IDX = 0x61,
   INS_ADC_ZPG = 0x65,
   INS_ADC_IMM = 0x69,
   INS_ADC_ABS = 0x6D,
   INS_ADC_IDY = 0x61,
+  INS_JMP_IND = 0x6C,
   INS_ADC_ZPX = 0x75,
   INS_SEI = 0x78,
   INS_ADC_ABY = 0x79,
@@ -152,9 +154,22 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
       cpu->carry = 1;
       cycles--;
       break;
+    case INS_JMP_ABS:
+      data[0] = cpu_get_mem(&cycles, cpu);
+      data[1] = cpu_get_mem(&cycles, cpu);
+      cpu->pc = (data[1] << 8) | data[0];
+      break;
     case INS_CLI:
       cpu->irq_disable = 0;
       cycles--;
+      break;
+    case INS_JMP_IND:
+      data[0] = cpu_get_mem(&cycles, cpu);
+      data[1] = cpu_get_mem(&cycles, cpu);
+      cpu->pc = (data[1] << 8) | data[0];
+      data[0] = cpu_get_mem(&cycles, cpu);
+      data[1] = cpu_get_mem(&cycles, cpu);
+      cpu->pc = (data[1] << 8) | data[0];
       break;
     case INS_SEI:
       cpu->irq_disable = 1;
@@ -246,13 +261,17 @@ int main(void) {
   struct CPU cpu;
   cpu.mem = &mem;
   cpu_reset(&cpu);
-  cpu.ac = 0x40;
-  cpu.mem->data[0xFFFC] = INS_STA_ZPG;
-  cpu.mem->data[0xFFFD] = 0x69;
+  cpu.mem->data[0x0120] = 0xFC;
+  cpu.mem->data[0x0121] = 0xBA;
+  cpu.mem->data[0xFFFC] = INS_JMP_IND;
+  cpu.mem->data[0xFFFD] = 0x20;
+  cpu.mem->data[0xFFFE] = 0x01;
+  cpu.mem->data[0xBAFC] = INS_LDA_IMM;
+  cpu.mem->data[0xBAFD] = 0x40;
   printf("pc antes: %x\n", cpu.pc);
-  cpu_execute(3, &cpu);
+  cpu_execute(7, &cpu);
   printf("pc depois: %x\n", cpu.pc);
-  printf("0x0069 = %x\n", cpu.mem->data[0x0069]);
+  printf("a = %x\n", cpu.ac);
 
   return 0;
 }

@@ -135,6 +135,14 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
       if (cpu->x & 0x80)
         cpu->negative = 1;
       break;
+    case INS_TAY:
+      cpu->y = cpu->ac;
+      if (cpu->y == 0)
+        cpu->zero = 1;
+      if (cpu->y & 0x80)
+        cpu->negative = 1;
+      cycles--;
+      break;
     case INS_LDA_IMM:
       data[0] = cpu_get_mem(&cycles, cpu);
       cpu->ac = data[0];
@@ -142,6 +150,22 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
         cpu->zero = 1;
       if (cpu->ac & 0x80)
         cpu->negative = 1;
+      break;
+    case INS_TAX:
+      cpu->x = cpu->ac;
+      if (cpu->x == 0)
+        cpu->zero = 1;
+      if (cpu->x & 0x80)
+        cpu->negative = 1;
+      cycles--;
+      break;
+    case INS_TSX:
+      cpu->x = cpu->sp;
+      if (cpu->x == 0)
+        cpu->zero = 1;
+      if (cpu->x & 0x80)
+        cpu->negative = 1;
+      cycles--;
       break;
     case INS_CLV:
       cpu->overflow = 0;

@@ -19,6 +19,7 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
   u8 data[10];
   while (cycles > 0) {
     u8 opcode = cpu_get_mem(&cycles, cpu);
+    u32 cycles_start = cycles;
     switch (opcode) {
     case INS_BPL:
       data[0] = cpu_get_mem(&cycles, cpu);
@@ -81,6 +82,13 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
       data[1] = cpu_get_mem(&cycles, cpu);
       memory_write(&cycles, (data[1] << 8) | data[0], cpu->ac, cpu->mem);
       break;
+    case INS_BCS:
+      data[0] = cpu_get_mem(&cycles, cpu);
+      if (cpu->carry) {
+        cpu->pc += data[0];
+        cycles--;
+      }
+      break;
     case INS_STA_ZPX:
       data[0] = cpu_get_mem(&cycles, cpu);
       memory_write(&cycles, data[0] + cpu->x, cpu->ac, cpu->mem);
@@ -94,7 +102,7 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
       cycles--;
       break;
     case INS_TXS:
-      cpu->x = cpu->sp;
+      cpu->sp = cpu->x;
       if (cpu->x == 0)
         cpu->zero = 1;
       if (cpu->x & 0x80)
@@ -192,9 +200,29 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
         cpu->negative = 1;
       cycles--;
       break;
+    case INS_LDA_ABX:
+      data[0] = cpu_get_mem(&cycles, cpu);
+      data[1] = cpu_get_mem(&cycles, cpu);
+      cpu->ac =
+          memory_read(&cycles, ((data[1] << 8) | data[0]) + cpu->x, cpu->mem);
+      if (cpu->ac == 0)
+        cpu->zero = 1;
+      if (cpu->ac & 0x80)
+        cpu->negative = 1;
+      break;
     case INS_CLV:
       cpu->overflow = 0;
       cycles--;
+      break;
+    case INS_CMP_IMM:
+      data[0] = cpu_get_mem(&cycles, cpu);
+      data[1] = cpu->ac - data[0];
+      if (cpu->ac >= data[0])
+        cpu->carry = 1;
+      if (cpu->ac == data[0])
+        cpu->zero = 1;
+      if (data[1] & 0x80)
+        cpu->negative = 1;
       break;
     case INS_CLD:
       cpu->decimal = 0;
@@ -209,7 +237,16 @@ void cpu_execute(u32 cycles, struct CPU *cpu) {
     default:
       printf("instrucao nao implementada em $%x: $%x\n", --cpu->pc, opcode);
       cycles = 0;
+      cycles_start = 0;
       break;
     }
+    printf("A:$%2x X:$%2x Y:$%2x PC:$%2x SP:$%2x | executado $%2x com "
+           "argumentos: ",
+           cpu->ac, cpu->x, cpu->y, cpu->pc, cpu->sp, opcode);
+    u32 delta = cycles_start - cycles;
+    for (int i = 0; i < delta; i++) {
+      printf("$%2x ", data[i]);
+    }
+    printf("\n");
   }
 }

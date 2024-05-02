@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
   free(rom_data);
 
   cpu.pc = (cpu.mem->data[0xFFFD] << 8) | cpu.mem->data[0xFFFC];
-  printf("VECTOR: $%x\n", cpu.pc);
+  printf("VECTOR RESET: $%x\n", cpu.pc);
   cpu_execute(100000, &cpu);
 
   return 0;

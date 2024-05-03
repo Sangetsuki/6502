@@ -2,11 +2,11 @@
   {
     "arguments": [
       "/usr/bin/gcc",
-      "-g",
       "-c",
       "-O3",
       "-I",
       "include",
+      "-Wall",
       "-o",
       "build/main.o",
       "src/main.c"
@@ -18,11 +18,11 @@
   {
     "arguments": [
       "/usr/bin/gcc",
-      "-g",
       "-c",
       "-O3",
       "-I",
       "include",
+      "-Wall",
       "-o",
       "build/memory.o",
       "src/memory.c"
@@ -30,5 +30,37 @@
     "directory": "/home/luiz/dev/6502",
     "file": "/home/luiz/dev/6502/src/memory.c",
     "output": "/home/luiz/dev/6502/build/memory.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-O3",
+      "-I",
+      "include",
+      "-Wall",
+      "-o",
+      "build/cpu.o",
+      "src/cpu.c"
+    ],
+    "directory": "/home/luiz/dev/6502",
+    "file": "/home/luiz/dev/6502/src/cpu.c",
+    "output": "/home/luiz/dev/6502/build/cpu.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-O3",
+      "-I",
+      "include",
+      "-Wall",
+      "-o",
+      "build/rom.o",
+      "src/rom.c"
+    ],
+    "directory": "/home/luiz/dev/6502",
+    "file": "/home/luiz/dev/6502/src/rom.c",
+    "output": "/home/luiz/dev/6502/build/rom.o"
   }
 ]

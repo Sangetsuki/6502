@@ -14,7 +14,7 @@ struct Memory {
 };
 
 void memory_reset(struct Memory *mem);
-u8 memory_read(u32 *cycles, u16 addr, struct Memory *mem);
-u8 memory_write(u32 *cycles, u16 addr, u8 value, struct Memory *mem);
+u8 memory_read(u16 addr, struct Memory *mem);
+u8 memory_write(u16 addr, u8 value, struct Memory *mem);
 
 #endif // INCLUDE_INCLUDE_MEMORY_H_

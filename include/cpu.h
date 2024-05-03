@@ -90,8 +90,8 @@ enum opcodes {
 };
 
 void cpu_reset(struct CPU *cpu);
-u8 cpu_get_mem(u32 *cycles, struct CPU *cpu);
-void cpu_execute(u32 cycles, struct CPU *cpu);
+u8 cpu_get_mem(struct CPU *cpu);
+void cpu_execute(struct CPU *cpu);
 void cpu_load_rom(const char *path, struct CPU *cpu);
 
 #endif // INCLUDE_INCLUDE_CPU_H_

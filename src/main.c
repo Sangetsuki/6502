@@ -24,12 +24,13 @@ int main(int argc, char *argv[]) {
 
   // mapper 0
   memcpy(&cpu.mem->data[0x8000], rom_data, 0x8000);
+  memcpy(&cpu.mem->data[0x0000], rom_data + 0x8000, 0x2000);
 
   free(rom_data);
 
   cpu.pc = (cpu.mem->data[0xFFFD] << 8) | cpu.mem->data[0xFFFC];
   printf("VECTOR RESET: $%x\n", cpu.pc);
-  cpu_execute(100000, &cpu);
+  cpu_execute(&cpu);
 
   return 0;
 }

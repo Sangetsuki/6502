@@ -26,8 +26,10 @@ struct CPU {
 };
 
 enum opcodes {
+  INS_ORA_IMM = 0x09,
   INS_BPL = 0x10,
   INS_CLC = 0x18,
+  INS_JSR = 0x20,
   INS_AND_IDX = 0x21,
   INS_AND_ZPG = 0x25,
   INS_AND_IMM = 0x29,
@@ -79,8 +81,11 @@ enum opcodes {
   INS_LDX_ABY = 0xBE,
   INS_CLV = 0xB8,
   INS_CMP_IMM = 0xC9,
+  INS_CA = 0xCA,
+  INS_BNE = 0xD0,
   INS_CLD = 0xD8,
   INS_NOP = 0xEA,
+  INS_INC_ABS = 0xEE,
   INS_SED = 0xF8,
 };
 

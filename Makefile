@@ -1,10 +1,11 @@
 C_FLAGS = -c -O3 -I include -Wall
+LINKER_FLAGS = -lraylib
 ifdef DEBUG
 	C_FLAGS += -g
 endif
 
 build/6502: build/main.o build/memory.o build/cpu.o build/rom.o
-	gcc $^ -o $@
+	gcc $^ $(LINKER_FLAGS) -o $@
 
 build/memory.o: src/memory.c include/memory.h
 	gcc $< $(C_FLAGS) -o $@

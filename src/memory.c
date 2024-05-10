@@ -1,4 +1,5 @@
 #include "memory.h"
+#include "ppu.h"
 
 void memory_reset(struct Memory *mem) {
   for (int i = 0; i < MEM_SIZE; i++) {

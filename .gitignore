@@ -2,3 +2,4 @@ build
 .cache
 *.nes
 *.bin
+compile_commands.json

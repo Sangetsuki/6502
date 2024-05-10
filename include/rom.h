@@ -8,7 +8,7 @@ typedef uint16_t u16;
 typedef uint32_t u32;
 
 struct RomHeader {
-  u32 nes;
+  u8 nes[4];
   u8 prg_rom_size;
   u8 chr_rom_size;
   u8 flags_6;

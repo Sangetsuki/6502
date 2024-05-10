@@ -46,7 +46,10 @@ int main(int argc, char *argv[]) {
   struct NES *nes;
   nes = create_NES();
 
-  load_ROM(nes, "./mario.nes");
+  if (!load_ROM(nes, "./mario.nes")) {
+    free_NES(nes);
+    return 1;
+  }
 
   InitWindow(256 * SCALE, 240 * SCALE, "6502");
 
@@ -59,7 +62,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < 512; i++) {
       render_tile(i, nes->cpu, x, y);
       x += 10;
-      if (x >= 256 - 8) {
+      if (x >= 248) {
         x = 2;
         y += 10;
       }
@@ -69,5 +72,6 @@ int main(int argc, char *argv[]) {
   }
   CloseWindow();
 
+  free_NES(nes);
   return 0;
 }

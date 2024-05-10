@@ -3,6 +3,8 @@
 #include "memory.h"
 #include "ppu.h"
 #include "rom.h"
+#include "util.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,22 +24,27 @@ void free_NES(struct NES *nes) {
   free(nes->ppu);
 }
 
-void load_ROM(struct NES *nes, const char *path) {
+int load_ROM(struct NES *nes, const char *path) {
   struct CPU *cpu = nes->cpu;
   struct RomHeader *header = &nes->romHeader;
+  memset(header, 0, sizeof(struct RomHeader));
   read_rom_header(path, header);
   u8 mapper = (header->flags_6 & 0xF0) | ((header->flags_7 & 0xF0) << 8);
   printf("mapper: %x\n", mapper);
   const char *title = (char *)header->nes;
-  puts(title);
+  if (strncmp(title, "NES", 3) != 0) {
+    memset(header, 0, sizeof(struct RomHeader));
+    return false;
+  }
   printf("Essa ROM tem %d kb de programa e %d kb de graficos\n",
          header->prg_rom_size * 16, header->chr_rom_size * 8);
   u8 *rom_data = alloc_rom(path);
-  memcpy(&nes->cpu->mem->data[0x8000], rom_data, 0x8000);
-  memcpy(&nes->cpu->mem->data[0x0000], rom_data + 0x8000, 0x2000);
+  memcpy(&cpu->mem->data[0x8000], rom_data, 0x8000);
+  memcpy(&cpu->mem->data[0x0000], rom_data + 0x8000, 0x2000);
 
   free(rom_data);
+  cpu->pc = btohw(cpu->mem->data[0xFFFC], cpu->mem->data[0xFFFD]);
 
-  cpu->pc = (cpu->mem->data[0xFFFD] << 8) | cpu->mem->data[0xFFFC];
   printf("VECTOR RESET: $%x\n", nes->cpu->pc);
+  return true;
 }

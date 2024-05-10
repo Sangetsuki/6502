@@ -1,5 +1,6 @@
 #include "cpu.h"
 #include "memory.h"
+#include "util.h"
 #include <stdio.h>
 
 void cpu_reset(struct CPU *cpu) {
@@ -68,7 +69,7 @@ void cpu_execute(struct CPU *cpu) {
     cpu_stack_push(cpu->pc >> 8, cpu);
     data[0] = cpu_get_mem(cpu);
     data[1] = cpu_get_mem(cpu);
-    cpu->sp = (data[1] << 8) | data[0];
+    cpu->pc = btohw(data[0], data[1]);
     break;
   case INS_AND_ZPG:
     data[0] = cpu_get_mem(cpu);
@@ -85,7 +86,7 @@ void cpu_execute(struct CPU *cpu) {
   case INS_JMP_ABS:
     data[0] = cpu_get_mem(cpu);
     data[1] = cpu_get_mem(cpu);
-    cpu->pc = (data[1] << 8) | data[0];
+    cpu->pc = btohw(data[0], data[1]);
     break;
   case INS_CLI:
     cpu->irq_disable = 0;
@@ -93,10 +94,10 @@ void cpu_execute(struct CPU *cpu) {
   case INS_JMP_IND:
     data[0] = cpu_get_mem(cpu);
     data[1] = cpu_get_mem(cpu);
-    cpu->pc = (data[1] << 8) | data[0];
+    cpu->pc = btohw(data[0], data[1]);
     data[0] = cpu_get_mem(cpu);
     data[1] = cpu_get_mem(cpu);
-    cpu->pc = (data[1] << 8) | data[0];
+    btohw(data[0], data[1]);
     break;
   case INS_SEI:
     cpu->irq_disable = 1;
@@ -108,7 +109,7 @@ void cpu_execute(struct CPU *cpu) {
   case INS_STA_ABS:
     data[0] = cpu_get_mem(cpu);
     data[1] = cpu_get_mem(cpu);
-    memory_write((data[1] << 8) | data[0], cpu->ac, cpu->mem);
+    memory_write(btohw(data[0], data[1]), cpu->ac, cpu->mem);
     break;
   case INS_BCS:
     data[0] = cpu_get_mem(cpu);
@@ -123,7 +124,7 @@ void cpu_execute(struct CPU *cpu) {
   case INS_STA_ABY:
     data[0] = cpu_get_mem(cpu);
     data[1] = cpu_get_mem(cpu);
-    memory_write(((data[1] << 8) | data[0]) + cpu->y, cpu->ac, cpu->mem);
+    memory_write(btohw(data[0], data[1]) + cpu->y, cpu->ac, cpu->mem);
     break;
   case INS_TXS:
     cpu->sp = cpu->x;
@@ -131,7 +132,7 @@ void cpu_execute(struct CPU *cpu) {
   case INS_STA_ABX:
     data[0] = cpu_get_mem(cpu);
     data[1] = cpu_get_mem(cpu);
-    memory_write(((data[1] << 8) | data[0]) + cpu->x, cpu->ac, cpu->mem);
+    memory_write(btohw(data[0], data[1]) + cpu->x, cpu->ac, cpu->mem);
     break;
   case INS_LDY_IMM:
     data[0] = cpu_get_mem(cpu);
@@ -169,7 +170,7 @@ void cpu_execute(struct CPU *cpu) {
   case INS_LDA_ABS:
     data[0] = cpu_get_mem(cpu);
     data[1] = cpu_get_mem(cpu);
-    cpu_set_ac(memory_read((data[1] << 8) | data[0], cpu->mem), cpu);
+    cpu_set_ac(memory_read(btohw(data[0], data[1]), cpu->mem), cpu);
     break;
   case INS_TSX:
     cpu_set_x(cpu->pc, cpu);
@@ -177,7 +178,7 @@ void cpu_execute(struct CPU *cpu) {
   case INS_LDA_ABX:
     data[0] = cpu_get_mem(cpu);
     data[1] = cpu_get_mem(cpu);
-    cpu_set_ac(memory_read(((data[1] << 8) | data[0]) + cpu->x, cpu->mem), cpu);
+    cpu_set_ac(memory_read(btohw(data[0], data[1]) + cpu->x, cpu->mem), cpu);
     break;
   case INS_CLV:
     cpu->overflow = 0;
@@ -209,8 +210,8 @@ void cpu_execute(struct CPU *cpu) {
   case INS_INC_ABS:
     data[0] = cpu_get_mem(cpu);
     data[1] = cpu_get_mem(cpu);
-    data[2] = memory_read((data[1] << 8) | data[0], cpu->mem);
-    memory_write((data[1] << 8) | data[0], data[2] + 1, cpu->mem);
+    data[2] = memory_read(btohw(data[0], data[1]), cpu->mem);
+    memory_write(btohw(data[0], data[1]), data[2] + 1, cpu->mem);
     if (data[2] == 0)
       cpu->zero = 1;
     if (data[2] & 0x80)

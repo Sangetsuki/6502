@@ -4,7 +4,7 @@ ifdef DEBUG
 	C_FLAGS += -g
 endif
 
-build/6502: build/main.o build/memory.o build/cpu.o build/rom.o build/nes.o
+build/6502: build/main.o build/memory.o build/cpu.o build/rom.o build/nes.o build/util.o
 	gcc $^ $(LINKER_FLAGS) -o $@
 
 build/memory.o: src/memory.c include/memory.h
@@ -20,4 +20,7 @@ build/rom.o: src/rom.c include/rom.h
 	gcc $< $(C_FLAGS) -o $@
 
 build/nes.o: src/nes.c include/nes.h
+	gcc $< $(C_FLAGS) -o $@
+
+build/util.o: src/util.c include/util.h
 	gcc $< $(C_FLAGS) -o $@

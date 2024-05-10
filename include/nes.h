@@ -9,6 +9,7 @@ struct NES {
 };
 
 struct NES *create_NES();
-void load_ROM(struct NES *nes, const char *path);
+int load_ROM(struct NES *nes, const char *path);
+void free_NES(struct NES *nes);
 
 #endif // INCLUDE_INCLUDE_NES_H_

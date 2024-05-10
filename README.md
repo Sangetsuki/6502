@@ -25,6 +25,13 @@ sudo apt-get install build-essential
 sudo dnf install @development-tools
 ```
 
+Compile
+
+```bash
+mkdir build
+make
+```
+
 ## References
 
 - [Dave Poo - Emulating a CPU in C++ (6502)](https://youtu.be/qJgsuQoy9bc?si=uAtB8mZySoH224Qp)
